@@ -57,6 +57,15 @@ public class ControllerTask {
         return serviceTask.detail(id, user);
     }
 
+    @DeleteMapping("/api/delete/{id}")
+    public @ResponseBody String delete(@PathVariable long id) {
+        System.out.println("DELETE : Detail  with cookie ");
+        ConfigHTTP.attenteArticifielle();
+        MUser user = currentUser();
+        serviceTask.removeOne(id, user);
+        return "";
+    }
+
     /**
      * Créer une page qui affiche tous les utilisateurs et les titres des tâches.
      */
