@@ -4,6 +4,8 @@ import org.joda.time.DateTime;
 import org.kickmyb.server.account.MUser;
 import org.kickmyb.server.account.MUserRepository;
 import org.kickmyb.transfer.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,11 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Transactional
 public class ServiceTaskImpl implements ServiceTask {
 
+    private static final Logger log = LoggerFactory.getLogger(ServiceTaskImpl.class);
     @Autowired
     MUserRepository repoUser;
     @Autowired MTaskRepository repo;
@@ -178,6 +182,18 @@ public class ServiceTaskImpl implements ServiceTask {
         }
 
         return response;
+    }
+
+    @Override
+    public void removeOne(Long id, MUser user) throws NotAllowed {
+       MTask t = repo.findById(id).get();
+       if(user.tasks.contains(t)){
+           user.tasks.remove(t);
+           repoUser.save(user);
+           repo.delete(t);
+       }else {
+           throw new NotAllowed();
+       }
     }
 
 }
