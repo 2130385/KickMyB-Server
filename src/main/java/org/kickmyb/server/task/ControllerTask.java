@@ -58,7 +58,7 @@ public class ControllerTask {
     }
 
     @DeleteMapping("/api/delete/{id}")
-    public @ResponseBody String delete(@PathVariable long id) {
+    public @ResponseBody String delete(@PathVariable long id) throws ServiceTask.NotAllowed {
         System.out.println("DELETE : Detail  with cookie ");
         ConfigHTTP.attenteArticifielle();
         MUser user = currentUser();

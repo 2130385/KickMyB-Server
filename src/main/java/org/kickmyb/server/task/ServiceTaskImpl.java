@@ -3,6 +3,8 @@ package org.kickmyb.server.task;
 import org.joda.time.DateTime;
 import org.kickmyb.server.account.MUser;
 import org.kickmyb.server.account.MUserRepository;
+import org.kickmyb.server.photo.MPhoto;
+import org.kickmyb.server.photo.MPhotoRepository;
 import org.kickmyb.transfer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,8 @@ public class ServiceTaskImpl implements ServiceTask {
     @Autowired
     MUserRepository repoUser;
     @Autowired MTaskRepository repo;
+    @Autowired
+    MPhotoRepository photoRepo;
     @Autowired MProgressEventRepository repoProgressEvent;
 
     private int percentage(Date start, Date current, Date end){
@@ -186,14 +190,20 @@ public class ServiceTaskImpl implements ServiceTask {
 
     @Override
     public void removeOne(Long id, MUser user) throws NotAllowed {
-       MTask t = repo.findById(id).get();
-       if(user.tasks.contains(t)){
-           user.tasks.remove(t);
-           repoUser.save(user);
-           repo.delete(t);
-       }else {
-           throw new NotAllowed();
-       }
+        MTask t = repo.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if (user.tasks.contains(t)) {
+            if (t.photo != null) {
+                photoRepo.delete(t.photo);
+            }
+            t.events.clear();
+            repo.save(t);
+            user.tasks.remove(t);
+            repoUser.save(user);
+            repo.delete(t);
+        } else {
+            throw new NotAllowed();
+        }
     }
 
 }
